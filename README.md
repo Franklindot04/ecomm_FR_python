@@ -1,2 +1,2 @@
-# first-repo
-my first repo ft modek
+to be updated
+ft modek

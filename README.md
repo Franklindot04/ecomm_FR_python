@@ -2,5 +2,5 @@
 
 Initial placeholder README for future development.
 
-in progress, to be updated soon
+in progress, to be updated soon.
 

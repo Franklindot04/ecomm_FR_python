@@ -1,6 +1,3 @@
-# Project Placeholder
-
-Initial placeholder README for future development.
-
-in progress, to be updated soon.
+## Last Updated
+2026-04-28 – investigating Docker build context issue
 

@@ -1,6 +1,6 @@
 ## Status
 
-Scaffold in progress (not yet pushed from local)
+Scaffold still in progress (not yet pushed from local)
 
 ## Context
 

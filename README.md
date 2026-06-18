@@ -1,10 +1,18 @@
 ## Status
 
-Scaffold still in progress (not yet pushed from local)
+Stage 2 (Products API) completed and pushed.  
+Stage 3 (Cart System) pending.
 
 ## Context
 
-Dockerizing service-template with TypeScript build
+FastAPI-based ecommerce microservice using SQLite and SQLAlchemy.
+
+Current features:
+- Product CRUD API implemented
+- Database integration (SQLite)
+- Pydantic validation layer
+- Seed data initialized
+- Swagger/OpenAPI available via `/docs`
 
 ## Last Updated
-2026-04-29 – investigating Docker build context issue
+2026-06-18 – completed Products API (Stage 2) and pushed to feature branch + main merge

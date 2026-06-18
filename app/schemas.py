@@ -1,1 +1,20 @@
-# Stage 1: schemas will be added in next step# Stage 1: seed logic will be added later
+from pydantic import BaseModel
+from typing import Optional
+
+
+class ProductBase(BaseModel):
+    name: str
+    description: Optional[str] = None
+    price: float
+    stock: int
+
+
+class ProductCreate(ProductBase):
+    pass
+
+
+class ProductResponse(ProductBase):
+    id: int
+
+    class Config:
+        from_attributes = True

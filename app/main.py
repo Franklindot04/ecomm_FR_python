@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Depends, HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 from typing import List
 
 from app.database import Base, engine, get_db
@@ -148,20 +148,18 @@ def clear_cart(db: Session = Depends(get_db)):
 @app.post("/orders", response_model=OrderResponse, status_code=201)
 def create_order(db: Session = Depends(get_db)):
 
-    cart_items = db.query(CartItem).all()
+    cart_items = db.query(CartItem).options(
+        selectinload(CartItem.product)
+    ).all()
 
     if not cart_items:
         raise HTTPException(status_code=400, detail="Cart is empty")
-
-    # preload products (optimization)
-    products = db.query(Product).all()
-    product_map = {p.id: p for p in products}
 
     total_price = 0
 
     # validate stock
     for item in cart_items:
-        product = product_map.get(item.product_id)
+        product = item.product
 
         if not product:
             raise HTTPException(status_code=404, detail="Product not found")
@@ -177,12 +175,11 @@ def create_order(db: Session = Depends(get_db)):
     # create order
     order = Order(total_price=total_price)
     db.add(order)
-    db.commit()
-    db.refresh(order)
+    db.flush()
 
     # create order items + update stock
     for item in cart_items:
-        product = product_map[item.product_id]
+        product = item.product
 
         product.stock -= item.quantity
 
@@ -196,23 +193,28 @@ def create_order(db: Session = Depends(get_db)):
         db.add(order_item)
 
     # clear cart
-    db.query(CartItem).delete()
+    for item in cart_items:
+        db.delete(item)
 
     db.commit()
-    db.refresh(order)
-
-    return order
+    return db.query(Order).options(
+        selectinload(Order.items).selectinload(OrderItem.product)
+    ).filter(Order.id == order.id).first()
 
 
 @app.get("/orders", response_model=List[OrderResponse])
 def get_orders(db: Session = Depends(get_db)):
-    return db.query(Order).all()
+    return db.query(Order).options(
+        selectinload(Order.items).selectinload(OrderItem.product)
+    ).all()
 
 
 @app.get("/orders/{order_id}", response_model=OrderResponse)
 def get_order(order_id: int, db: Session = Depends(get_db)):
 
-    order = db.query(Order).filter(Order.id == order_id).first()
+    order = db.query(Order).options(
+        selectinload(Order.items).selectinload(OrderItem.product)
+    ).filter(Order.id == order_id).first()
 
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")

@@ -1,6 +1,11 @@
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, List
+from datetime import datetime
 
+
+# -------------------------
+# PRODUCT
+# -------------------------
 
 class ProductBase(BaseModel):
     name: str
@@ -20,6 +25,10 @@ class ProductResponse(ProductBase):
         from_attributes = True
 
 
+# -------------------------
+# CART
+# -------------------------
+
 class CartItemCreate(BaseModel):
     product_id: int
     quantity: int = Field(gt=0)
@@ -29,6 +38,30 @@ class CartItemResponse(BaseModel):
     id: int
     quantity: int
     product: ProductResponse
+
+    class Config:
+        from_attributes = True
+
+
+# -------------------------
+# ORDERS
+# -------------------------
+
+class OrderItemResponse(BaseModel):
+    id: int
+    quantity: int
+    price_at_purchase: float
+    product: ProductResponse
+
+    class Config:
+        from_attributes = True
+
+
+class OrderResponse(BaseModel):
+    id: int
+    total_price: float
+    created_at: datetime
+    items: List[OrderItemResponse]
 
     class Config:
         from_attributes = True

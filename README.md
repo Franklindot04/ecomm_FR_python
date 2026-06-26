@@ -141,6 +141,7 @@ Implemented:
 
 ### Application
 
+```text
 app/
 ├── api/                # API route handlers
 │   ├── __init__.py
@@ -152,12 +153,15 @@ app/
 ├── models.py           # SQLAlchemy models
 ├── schemas.py          # Pydantic schemas
 └── seed.py             # Seed initial product data
+```
 
 ### Root Files
 
+```text
 requirements.txt        # Python dependencies
 ecommerce.db            # SQLite database (dev only)
 README.md               # Project documentation
+```
 
 The router modularization was introduced after Stage 4 to improve maintainability and prepare for future architectural improvements.
 

@@ -2,7 +2,7 @@
 
 A learning-oriented ecommerce microservice built with FastAPI, SQLite, and SQLAlchemy.
 
-The project is being developed incrementally through milestone-based stages, gradually evolving from a simple MVP into a more realistic ecommerce backend while keeping the codebase clean, documented, and easy to extend [web:191][web:193].
+The project is being developed incrementally through milestone-based stages, gradually evolving from a simple MVP into a more realistic ecommerce backend while keeping the codebase clean, documented, and easy to extend.
 
 ---
 

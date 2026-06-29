@@ -2,6 +2,8 @@ from pydantic import BaseModel, Field
 from typing import Optional, List
 from datetime import datetime
 
+from app.models import OrderStatus
+
 
 # -------------------------
 # PRODUCT
@@ -60,8 +62,13 @@ class OrderItemResponse(BaseModel):
 class OrderResponse(BaseModel):
     id: int
     total_price: float
+    status: OrderStatus
     created_at: datetime
     items: List[OrderItemResponse]
 
     class Config:
         from_attributes = True
+
+
+class OrderStatusUpdate(BaseModel):
+    status: OrderStatus

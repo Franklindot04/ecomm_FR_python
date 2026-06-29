@@ -6,16 +6,75 @@ from app.database import get_db
 from app.models import (
     CartItem,
     Order,
-    OrderItem
+    OrderItem,
+    OrderStatus as ORMOrderStatus
 )
-from app.schemas import OrderResponse
+from app.schemas import OrderResponse, OrderStatusUpdate, OrderStatus
 
 router = APIRouter()
+
+ALLOWED_TRANSITIONS = {
+    OrderStatus.PENDING: {
+        OrderStatus.PAID,
+        OrderStatus.CANCELLED,
+    },
+    OrderStatus.PAID: {
+        OrderStatus.PROCESSING,
+        OrderStatus.CANCELLED,
+    },
+    OrderStatus.PROCESSING: {
+        OrderStatus.SHIPPED,
+        OrderStatus.CANCELLED,
+    },
+    OrderStatus.SHIPPED: {
+        OrderStatus.DELIVERED,
+    },
+    OrderStatus.DELIVERED: set(),
+    OrderStatus.CANCELLED: set(),
+}
+
+
+def _get_order_or_404(db: Session, order_id: int) -> Order:
+    order = db.query(Order).options(
+        selectinload(Order.items).selectinload(OrderItem.product)
+    ).filter(
+        Order.id == order_id
+    ).first()
+
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    return order
+
+
+def _validate_transition(current_status: OrderStatus, new_status: OrderStatus):
+    if current_status == OrderStatus.CANCELLED:
+        raise HTTPException(
+            status_code=400,
+            detail="Cannot move a cancelled order to another status"
+        )
+
+    if current_status == OrderStatus.DELIVERED and new_status == OrderStatus.CANCELLED:
+        raise HTTPException(
+            status_code=400,
+            detail="Cannot cancel a delivered order"
+        )
+
+    if new_status == OrderStatus.CANCELLED and current_status == OrderStatus.CANCELLED:
+        raise HTTPException(
+            status_code=400,
+            detail="Order is already cancelled"
+        )
+
+    if new_status not in ALLOWED_TRANSITIONS[current_status]:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid order status transition"
+        )
 
 
 @router.post("/orders", response_model=OrderResponse, status_code=201)
 def create_order(db: Session = Depends(get_db)):
-
     cart_items = db.query(CartItem).options(
         selectinload(CartItem.product)
     ).all()
@@ -25,7 +84,6 @@ def create_order(db: Session = Depends(get_db)):
 
     total_price = 0
 
-    # validate stock
     for item in cart_items:
         product = item.product
 
@@ -40,12 +98,10 @@ def create_order(db: Session = Depends(get_db)):
 
         total_price += product.price * item.quantity
 
-    # create order
-    order = Order(total_price=total_price)
+    order = Order(total_price=total_price, status=ORMOrderStatus.PENDING)
     db.add(order)
     db.flush()
 
-    # create order items + update stock
     for item in cart_items:
         product = item.product
 
@@ -60,7 +116,6 @@ def create_order(db: Session = Depends(get_db)):
 
         db.add(order_item)
 
-    # clear cart
     for item in cart_items:
         db.delete(item)
 
@@ -82,17 +137,38 @@ def get_orders(db: Session = Depends(get_db)):
 
 @router.get("/orders/{order_id}", response_model=OrderResponse)
 def get_order(order_id: int, db: Session = Depends(get_db)):
+    return _get_order_or_404(db, order_id)
 
-    order = db.query(Order).options(
-        selectinload(Order.items).selectinload(OrderItem.product)
-    ).filter(
-        Order.id == order_id
-    ).first()
 
-    if not order:
-        raise HTTPException(
-            status_code=404,
-            detail="Order not found"
-        )
+@router.patch("/orders/{order_id}/status", response_model=OrderResponse)
+def update_order_status(
+    order_id: int,
+    payload: OrderStatusUpdate,
+    db: Session = Depends(get_db)
+):
+    order = _get_order_or_404(db, order_id)
 
-    return order
+    current_status = OrderStatus(order.status.value)
+    new_status = payload.status
+
+    _validate_transition(current_status, new_status)
+
+    order.status = ORMOrderStatus(new_status.value)
+    db.commit()
+    db.refresh(order)
+
+    return _get_order_or_404(db, order.id)
+
+
+@router.post("/orders/{order_id}/cancel", response_model=OrderResponse)
+def cancel_order(order_id: int, db: Session = Depends(get_db)):
+    order = _get_order_or_404(db, order_id)
+
+    current_status = OrderStatus(order.status.value)
+    _validate_transition(current_status, OrderStatus.CANCELLED)
+
+    order.status = ORMOrderStatus.CANCELLED
+    db.commit()
+    db.refresh(order)
+
+    return _get_order_or_404(db, order.id)

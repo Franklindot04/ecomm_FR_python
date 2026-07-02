@@ -41,6 +41,14 @@ The project is being developed incrementally through milestone-based stages, gra
 - State-machine style workflow validation.
 - Swagger-visible status fields.
 
+### Authentication API
+- User registration.
+- User login.
+- JWT access tokens.
+- Password hashing with bcrypt.
+- Protected user route.
+- Swagger OAuth2 password flow.
+
 ### Infrastructure
 - SQLite database.
 - SQLAlchemy ORM.
@@ -99,8 +107,8 @@ Implemented:
 
 ---
 
-✅ Stage 4 — Orders System  
-Completed: 2026-06-21
+✅ Stage 4 — Orders System and Router Refactor  
+Completed: 2026-06-26
 
 Implemented:
 - Checkout endpoint.
@@ -110,13 +118,6 @@ Implemented:
 - Empty cart after checkout.
 - Nested serialization.
 - Eager loading.
-
----
-
-✅ Post-Stage 4 Refactor  
-Completed: 2026-06-26
-
-Implemented:
 - Router modularization.
 - Products router.
 - Cart router.
@@ -141,6 +142,21 @@ Implemented:
 
 ---
 
+✅ Stage 6 — Authentication  
+Completed: 2026-07-03
+
+Implemented:
+- User model.
+- User registration.
+- User login.
+- Password hashing.
+- JWT token generation.
+- OAuth2 password flow in Swagger.
+- Protected route: `GET /auth/me`.
+- Token-based user lookup.
+
+---
+
 ## Current Architecture
 
 ### Application
@@ -149,9 +165,11 @@ Implemented:
 app/
 ├── api/                # API route handlers
 │   ├── __init__.py
+│   ├── auth.py         # Authentication endpoints
 │   ├── products.py     # Product endpoints
 │   ├── cart.py         # Cart endpoints
 │   └── orders.py       # Order endpoints
+├── auth_utils.py       # Password hashing, JWT, auth dependency
 ├── database.py         # Database connection/session setup
 ├── main.py             # FastAPI application entry point
 ├── models.py           # SQLAlchemy models
@@ -178,10 +196,9 @@ The router modularization was introduced after Stage 4 to improve maintainabilit
 | 1 | FastAPI Setup | ✅ |
 | 2 | Products API | ✅ |
 | 3 | Cart System | ✅ |
-| 4 | Orders System | ✅ |
-| Post-Stage 4 | Router Modularization | ✅ |
+| 4 | Orders System and Router Refactor | ✅ |
 | 5 | Order Lifecycle Management | ✅ |
-| 6 | Authentication | 🚧 |
+| 6 | Authentication | ✅ |
 | 7 | Multi-user Ecommerce | 🚧 |
 | 8 | Architecture Refactor | 🚧 |
 | 9 | Alembic | 🚧 |
@@ -196,38 +213,35 @@ The router modularization was introduced after Stage 4 to improve maintainabilit
 
 ## Next Milestone
 
-### Stage 6 — Authentication
+### Stage 7 — Multi-user Ecommerce
 
 Planned focus:
-- User accounts.
-- Login and registration.
-- Protected endpoints.
-- Cart and order ownership.
-- Foundation for multi-user support.
+- Cart ownership.
+- Order ownership.
+- User-scoped data access.
+- Per-user checkout flow.
+- Authorization on protected resources.
 
 Skills expected:
-- Authentication.
-- Password hashing.
-- Token-based access.
-- User-scoped data access.
+- Role-aware access patterns.
+- Ownership validation.
+- Secure data isolation.
 
 ---
 
 ## Last Updated
 
-```text
-2026-06-30 – completed Stage 5 order lifecycle management
+2026-07-03 – completed Authentication (Stage 6)
 
-2026-06-26 – completed router modularization after Stage 4
+2026-06-30 – completed order lifecycle management (Stage 5)
 
-2026-06-21 – completed Orders System (Stage 4)
+2026-06-26 – completed orders system and router refactor (Stage 4)
 
 2026-06-20 – completed Cart System (Stage 3)
 
 2026-06-19 – completed Products API (Stage 2)
 
 2026-06-18 – completed FastAPI Base Setup (Stage 1)
-```
 
 ---
 
@@ -238,9 +252,8 @@ Skills expected:
 - SQLite.
 - SQLAlchemy.
 - Pydantic.
-
----
-
-## License
-
-Licensed under the MIT License.
+- Dependency injection.
+- JWT.
+- OAuth2 password flow.
+- Password hashing.
+- Swagger/OpenAPI.

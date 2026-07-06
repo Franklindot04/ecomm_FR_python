@@ -31,9 +31,11 @@ class CartItem(Base):
 
     id = Column(Integer, primary_key=True, index=True)
 
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     product_id = Column(Integer, ForeignKey("products.id"), nullable=False)
     quantity = Column(Integer, nullable=False, default=1)
 
+    user = relationship("User", back_populates="cart_items")
     product = relationship("Product")
 
 
@@ -41,10 +43,12 @@ class Order(Base):
     __tablename__ = "orders"
 
     id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     total_price = Column(Float, nullable=False)
     status = Column(Enum(OrderStatus), nullable=False, default=OrderStatus.PENDING)
     created_at = Column(DateTime, server_default=func.now())
 
+    user = relationship("User", back_populates="orders")
     items = relationship(
         "OrderItem",
         back_populates="order",
@@ -66,6 +70,7 @@ class OrderItem(Base):
     order = relationship("Order", back_populates="items")
     product = relationship("Product")
 
+
 class User(Base):
     __tablename__ = "users"
 
@@ -73,4 +78,6 @@ class User(Base):
     username = Column(String, unique=True, index=True, nullable=False)
     email = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
-    
+
+    cart_items = relationship("CartItem", back_populates="user", cascade="all, delete-orphan")
+    orders = relationship("Order", back_populates="user", cascade="all, delete-orphan")

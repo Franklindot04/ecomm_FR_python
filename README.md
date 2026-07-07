@@ -49,6 +49,15 @@ The project is being developed incrementally through milestone-based stages, gra
 - Protected user route.
 - Swagger OAuth2 password flow.
 
+### Multi-user Ecommerce API
+- User-owned cart items.
+- User-owned orders.
+- User-scoped cart access.
+- User-scoped order access.
+- Per-user checkout flow.
+- Ownership protection for order retrieval and updates.
+- Protected cart and order endpoints.
+
 ### Infrastructure
 - SQLite database.
 - SQLAlchemy ORM.
@@ -157,6 +166,22 @@ Implemented:
 
 ---
 
+✅ Stage 7 — Multi-user Ecommerce  
+Completed: 2026-07-07
+
+Implemented:
+- User ownership for cart items.
+- User ownership for orders.
+- Authenticated cart endpoints.
+- Authenticated order endpoints.
+- User-scoped cart queries.
+- User-scoped order queries.
+- Per-user checkout behavior.
+- Ownership checks for order access and modification.
+- Swagger-documented 404 responses for inaccessible orders.
+
+---
+
 ## Current Architecture
 
 ### Application
@@ -167,8 +192,8 @@ app/
 │   ├── __init__.py
 │   ├── auth.py         # Authentication endpoints
 │   ├── products.py     # Product endpoints
-│   ├── cart.py         # Cart endpoints
-│   └── orders.py       # Order endpoints
+│   ├── cart.py         # User-scoped cart endpoints
+│   └── orders.py       # User-scoped order endpoints
 ├── auth_utils.py       # Password hashing, JWT, auth dependency
 ├── database.py         # Database connection/session setup
 ├── main.py             # FastAPI application entry point
@@ -199,7 +224,7 @@ The router modularization was introduced after Stage 4 to improve maintainabilit
 | 4 | Orders System and Router Refactor | ✅ |
 | 5 | Order Lifecycle Management | ✅ |
 | 6 | Authentication | ✅ |
-| 7 | Multi-user Ecommerce | 🚧 |
+| 7 | Multi-user Ecommerce | ✅ |
 | 8 | Architecture Refactor | 🚧 |
 | 9 | Alembic | 🚧 |
 | 10 | Testing | 🚧 |
@@ -213,23 +238,26 @@ The router modularization was introduced after Stage 4 to improve maintainabilit
 
 ## Next Milestone
 
-### Stage 7 — Multi-user Ecommerce
+### Stage 8 — Architecture Refactor
 
 Planned focus:
-- Cart ownership.
-- Order ownership.
-- User-scoped data access.
-- Per-user checkout flow.
-- Authorization on protected resources.
+- Service-layer extraction.
+- Cleaner separation of concerns.
+- Reduced route complexity.
+- Improved maintainability.
+- Better foundation for future scaling.
 
 Skills expected:
-- Role-aware access patterns.
-- Ownership validation.
-- Secure data isolation.
+- Refactoring.
+- Service architecture.
+- Cleaner module boundaries.
+- Backend code organization.
 
 ---
 
 ## Last Updated
+
+2026-07-07 – completed multi-user ecommerce (Stage 7)
 
 2026-07-03 – completed Authentication (Stage 6)
 

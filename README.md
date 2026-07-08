@@ -58,6 +58,14 @@ The project is being developed incrementally through milestone-based stages, gra
 - Ownership protection for order retrieval and updates.
 - Protected cart and order endpoints.
 
+### Architecture Improvements
+- Service-layer extraction for cart logic.
+- Service-layer extraction for order logic.
+- Thinner route handlers.
+- Cleaner separation of concerns.
+- Improved maintainability for future scaling.
+- Preserved existing API behavior after refactor.
+
 ### Infrastructure
 - SQLite database.
 - SQLAlchemy ORM.
@@ -182,24 +190,44 @@ Implemented:
 
 ---
 
+✅ Stage 8 — Architecture Refactor  
+Completed: 2026-07-08
+
+Implemented:
+- Service-layer extraction for cart logic.
+- Service-layer extraction for order logic.
+- `app/services/cart_service.py`.
+- `app/services/order_service.py`.
+- Thinner API route handlers.
+- Cleaner separation between routing and business logic.
+- Preserved Swagger behavior.
+- Preserved multi-user ownership isolation.
+- Improved maintainability and extensibility.
+
+---
+
 ## Current Architecture
 
 ### Application
 
 ```text
 app/
-├── api/                # API route handlers
+├── api/                    # API route handlers
 │   ├── __init__.py
-│   ├── auth.py         # Authentication endpoints
-│   ├── products.py     # Product endpoints
-│   ├── cart.py         # User-scoped cart endpoints
-│   └── orders.py       # User-scoped order endpoints
-├── auth_utils.py       # Password hashing, JWT, auth dependency
-├── database.py         # Database connection/session setup
-├── main.py             # FastAPI application entry point
-├── models.py           # SQLAlchemy models
-├── schemas.py          # Pydantic schemas
-└── seed.py             # Seed initial product data
+│   ├── auth.py             # Authentication endpoints
+│   ├── products.py         # Product endpoints
+│   ├── cart.py             # User-scoped cart endpoints
+│   └── orders.py           # User-scoped order endpoints
+├── services/               # Business logic layer
+│   ├── __init__.py
+│   ├── cart_service.py     # Cart business logic
+│   └── order_service.py    # Order business logic
+├── auth_utils.py           # Password hashing, JWT, auth dependency
+├── database.py             # Database connection/session setup
+├── main.py                 # FastAPI application entry point
+├── models.py               # SQLAlchemy models
+├── schemas.py              # Pydantic schemas
+└── seed.py                 # Seed initial product data
 ```
 
 ### Root Files
@@ -210,7 +238,7 @@ ecommerce.db            # SQLite database (dev only)
 README.md               # Project documentation
 ```
 
-The router modularization was introduced after Stage 4 to improve maintainability and prepare for future architectural improvements.
+The router modularization was introduced after Stage 4, and the service layer was added in Stage 8 to further improve maintainability, separation of concerns, and future scalability [web:617][web:612].
 
 ---
 
@@ -225,7 +253,7 @@ The router modularization was introduced after Stage 4 to improve maintainabilit
 | 5 | Order Lifecycle Management | ✅ |
 | 6 | Authentication | ✅ |
 | 7 | Multi-user Ecommerce | ✅ |
-| 8 | Architecture Refactor | 🚧 |
+| 8 | Architecture Refactor | ✅ |
 | 9 | Alembic | 🚧 |
 | 10 | Testing | 🚧 |
 | 11 | Docker | 🚧 |
@@ -238,24 +266,26 @@ The router modularization was introduced after Stage 4 to improve maintainabilit
 
 ## Next Milestone
 
-### Stage 8 — Architecture Refactor
+### Stage 9 — Alembic
 
 Planned focus:
-- Service-layer extraction.
-- Cleaner separation of concerns.
-- Reduced route complexity.
-- Improved maintainability.
-- Better foundation for future scaling.
+- Introduce database migrations.
+- Replace manual schema evolution.
+- Track model changes safely.
+- Improve developer workflow for database updates.
+- Prepare the project for more realistic schema changes.
 
 Skills expected:
-- Refactoring.
-- Service architecture.
-- Cleaner module boundaries.
-- Backend code organization.
+- Alembic migrations.
+- SQLAlchemy schema evolution.
+- Migration workflow management.
+- Database version control.
 
 ---
 
 ## Last Updated
+
+2026-07-08 – completed architecture refactor (Stage 8)
 
 2026-07-07 – completed multi-user ecommerce (Stage 7)
 
@@ -285,3 +315,4 @@ Skills expected:
 - OAuth2 password flow.
 - Password hashing.
 - Swagger/OpenAPI.
+- Service-layer architecture.

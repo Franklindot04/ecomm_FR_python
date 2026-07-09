@@ -1,6 +1,6 @@
 # Ecommerce Microservice API
 
-A learning-oriented ecommerce microservice built with FastAPI, SQLite, and SQLAlchemy.
+A learning-oriented ecommerce microservice built with FastAPI, SQLite, SQLAlchemy, and Alembic.
 
 The project is being developed incrementally through milestone-based stages, gradually evolving from a simple MVP into a more realistic ecommerce backend while keeping the codebase clean, documented, and easy to extend.
 
@@ -66,9 +66,17 @@ The project is being developed incrementally through milestone-based stages, gra
 - Improved maintainability for future scaling.
 - Preserved existing API behavior after refactor.
 
+### Database Migration Support
+- Alembic integration for schema migrations.
+- Initial baseline migration.
+- SQLite-compatible migration configuration.
+- Database revision tracking with `alembic_version`.
+- Version-controlled schema evolution for future changes.
+
 ### Infrastructure
 - SQLite database.
 - SQLAlchemy ORM.
+- Alembic migrations.
 - Pydantic schemas.
 - Dependency injection.
 - Seed initialization.
@@ -206,6 +214,19 @@ Implemented:
 
 ---
 
+✅ Stage 9 — Alembic  
+Completed: 2026-07-09
+
+Implemented:
+- Alembic installation and initialization.
+- Migration environment setup.
+- SQLAlchemy metadata integration.
+- Initial baseline migration.
+- Database version tracking with `alembic_version`.
+- SQLite-compatible migration configuration.
+
+---
+
 ## Current Architecture
 
 ### Application
@@ -228,6 +249,13 @@ app/
 ├── models.py               # SQLAlchemy models
 ├── schemas.py              # Pydantic schemas
 └── seed.py                 # Seed initial product data
+
+alembic/
+├── env.py                  # Alembic environment configuration
+├── script.py.mako          # Migration template
+└── versions/               # Migration revision files
+
+alembic.ini                 # Alembic configuration
 ```
 
 ### Root Files
@@ -238,7 +266,7 @@ ecommerce.db            # SQLite database (dev only)
 README.md               # Project documentation
 ```
 
-The router modularization was introduced after Stage 4, and the service layer was added in Stage 8 to further improve maintainability, separation of concerns, and future scalability [web:617][web:612].
+The router modularization was introduced after Stage 4, the service layer was added in Stage 8, and Alembic migration support was added in Stage 9 to improve maintainability, separation of concerns, and schema evolution workflow.
 
 ---
 
@@ -254,7 +282,7 @@ The router modularization was introduced after Stage 4, and the service layer wa
 | 6 | Authentication | ✅ |
 | 7 | Multi-user Ecommerce | ✅ |
 | 8 | Architecture Refactor | ✅ |
-| 9 | Alembic | 🚧 |
+| 9 | Alembic | ✅ |
 | 10 | Testing | 🚧 |
 | 11 | Docker | 🚧 |
 | 12 | Caching | 🚧 |
@@ -266,24 +294,27 @@ The router modularization was introduced after Stage 4, and the service layer wa
 
 ## Next Milestone
 
-### Stage 9 — Alembic
+### Stage 10 — Testing
 
 Planned focus:
-- Introduce database migrations.
-- Replace manual schema evolution.
-- Track model changes safely.
-- Improve developer workflow for database updates.
-- Prepare the project for more realistic schema changes.
+- Add automated tests for core API flows.
+- Cover products, cart, orders, and authentication.
+- Verify multi-user isolation behavior.
+- Protect refactors with regression coverage.
+- Improve confidence for future stages.
 
 Skills expected:
-- Alembic migrations.
-- SQLAlchemy schema evolution.
-- Migration workflow management.
-- Database version control.
+- Pytest.
+- FastAPI test client usage.
+- Database test setup.
+- Authenticated endpoint testing.
+- Regression testing.
 
 ---
 
 ## Last Updated
+
+2026-07-09 – completed Alembic integration (Stage 9)
 
 2026-07-08 – completed architecture refactor (Stage 8)
 
@@ -309,6 +340,7 @@ Skills expected:
 - FastAPI.
 - SQLite.
 - SQLAlchemy.
+- Alembic.
 - Pydantic.
 - Dependency injection.
 - JWT.

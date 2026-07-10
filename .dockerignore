@@ -1,0 +1,17 @@
+.git
+.gitignore
+.venv
+venv
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache
+ecommerce.db
+alembic/__pycache__
+alembic/versions/__pycache__
+app/__pycache__
+app/api/__pycache__
+app/services/__pycache__
+tests/__pycache__
+.env

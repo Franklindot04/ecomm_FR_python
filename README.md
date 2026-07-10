@@ -1,8 +1,8 @@
 # Ecommerce Microservice API
 
-A learning-oriented ecommerce microservice built with FastAPI, SQLite, SQLAlchemy, and Alembic.
+A learning-oriented ecommerce microservice built with FastAPI, SQLite, SQLAlchemy, Alembic, and Docker.
 
-The project is being developed incrementally through milestone-based stages, gradually evolving from a simple MVP into a more realistic ecommerce backend while keeping the codebase clean, documented, testable, and easy to extend.
+The project is being developed incrementally through milestone-based stages, gradually evolving from a simple MVP into a more realistic ecommerce backend while keeping the codebase clean, documented, testable, portable, and easy to extend.
 
 ---
 
@@ -81,6 +81,14 @@ The project is being developed incrementally through milestone-based stages, gra
 - Auth, products, cart, and orders endpoint coverage.
 - CI-ready test baseline.
 
+### Docker Support
+- Dockerized FastAPI application.
+- `Dockerfile` for container image builds.
+- `docker-compose.yml` for local container orchestration.
+- `.dockerignore` for cleaner build context.
+- Environment-variable-based configuration.
+- Container healthcheck using `/health`.
+
 ### Infrastructure
 - SQLite database.
 - SQLAlchemy ORM.
@@ -89,6 +97,10 @@ The project is being developed incrementally through milestone-based stages, gra
 - Dependency injection.
 - Seed initialization.
 - Swagger/OpenAPI documentation.
+- Docker.
+- Docker Compose.
+- Environment variables.
+- Container healthchecks.
 
 Swagger UI available at:
 
@@ -111,6 +123,31 @@ Current baseline:
 - Coverage includes authentication, products, cart, and orders.
 - Tests run against an isolated SQLite test database using shared fixtures and FastAPI dependency overrides.
 - The test suite runs against the FastAPI app directly and does not require starting the server manually.
+
+---
+
+## Running with Docker
+
+Build and start the containerized application with:
+
+```bash
+docker compose up --build
+```
+
+The API will be available at:
+
+```text
+http://localhost:8000
+```
+
+Useful endpoints:
+- `/docs`
+- `/health`
+
+Current Docker baseline:
+- Containerized FastAPI app.
+- Environment variables loaded from `.env`.
+- Healthcheck enabled for container validation.
 
 ---
 
@@ -269,6 +306,22 @@ Implemented:
 
 ---
 
+✅ Stage 11 — Docker  
+Completed: 2026-07-11
+
+Implemented:
+- Added `Dockerfile` for containerizing the FastAPI app.
+- Added `docker-compose.yml` for local container orchestration.
+- Added `.dockerignore` to reduce Docker build context noise.
+- Updated `.gitignore` for local environment and cache hygiene.
+- Moved database configuration to environment variables.
+- Moved auth configuration to environment variables.
+- Added `.env`-driven runtime configuration.
+- Added Docker healthcheck using the `/health` endpoint.
+- Verified successful container build and healthy runtime state.
+
+---
+
 ## Current Architecture
 
 ### Application
@@ -297,8 +350,6 @@ alembic/
 ├── script.py.mako          # Migration template
 └── versions/               # Migration revision files
 
-alembic.ini                 # Alembic configuration
-
 tests/
 ├── __init__.py
 ├── conftest.py             # Shared pytest fixtures and test DB setup
@@ -312,11 +363,16 @@ tests/
 
 ```text
 requirements.txt        # Python dependencies
+Dockerfile              # Docker image definition
+docker-compose.yml      # Local container orchestration
+.dockerignore           # Docker build context exclusions
+.env                    # Local environment variables (not committed)
+alembic.ini             # Alembic configuration
 ecommerce.db            # SQLite database (dev only)
 README.md               # Project documentation
 ```
 
-The router modularization was introduced after Stage 4, the service layer was added in Stage 8, Alembic migration support was added in Stage 9, and automated testing support was added in Stage 10 to improve maintainability, separation of concerns, schema evolution workflow, and regression safety.
+The router modularization was introduced after Stage 4, the service layer was added in Stage 8, Alembic migration support was added in Stage 9, automated testing support was added in Stage 10, and Docker support was added in Stage 11 to improve maintainability, separation of concerns, schema evolution workflow, regression safety, portability, and containerized development.
 
 ---
 
@@ -334,7 +390,7 @@ The router modularization was introduced after Stage 4, the service layer was ad
 | 8 | Architecture Refactor | ✅ |
 | 9 | Alembic | ✅ |
 | 10 | Testing | ✅ |
-| 11 | Docker | 🚧 |
+| 11 | Docker | ✅ |
 | 12 | Caching | 🚧 |
 | 13 | Background Tasks | 🚧 |
 | 14 | Mock Payments | 🚧 |
@@ -344,24 +400,25 @@ The router modularization was introduced after Stage 4, the service layer was ad
 
 ## Next Milestone
 
-### Stage 11 — Docker
+### Stage 12 — Caching
 
 Planned focus:
-- Containerize the FastAPI application.
-- Create a reproducible local development environment.
-- Improve portability across machines.
-- Prepare the project for container-based deployment and CI workflows.
+- Introduce caching for frequently accessed data.
+- Improve performance for read-heavy endpoints.
+- Reduce repeated database queries.
+- Prepare the API for more realistic production-style optimization.
 
 Skills expected:
-- Docker.
-- Dockerfile creation.
-- Container networking basics.
-- Environment configuration.
-- FastAPI containerization.
+- Caching concepts.
+- FastAPI integration patterns.
+- Cache invalidation basics.
+- Performance-oriented backend design.
 
 ---
 
 ## Last Updated
+
+2026-07-11 – completed Docker containerization (Stage 11)
 
 2026-07-10 – completed testing baseline with pytest (Stage 10)
 
@@ -402,3 +459,7 @@ Skills expected:
 - Pytest.
 - HTTPX.
 - Automated API testing.
+- Docker.
+- Docker Compose.
+- Environment variables.
+- Container healthchecks.

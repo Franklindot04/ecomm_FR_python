@@ -2,7 +2,7 @@
 
 A learning-oriented ecommerce microservice built with FastAPI, SQLite, SQLAlchemy, and Alembic.
 
-The project is being developed incrementally through milestone-based stages, gradually evolving from a simple MVP into a more realistic ecommerce backend while keeping the codebase clean, documented, and easy to extend.
+The project is being developed incrementally through milestone-based stages, gradually evolving from a simple MVP into a more realistic ecommerce backend while keeping the codebase clean, documented, testable, and easy to extend.
 
 ---
 
@@ -73,6 +73,14 @@ The project is being developed incrementally through milestone-based stages, gra
 - Database revision tracking with `alembic_version`.
 - Version-controlled schema evolution for future changes.
 
+### Testing
+- Pytest-based automated test suite.
+- Shared fixtures with `conftest.py`.
+- Isolated SQLite test database.
+- FastAPI dependency overrides for test isolation.
+- Auth, products, cart, and orders endpoint coverage.
+- CI-ready test baseline.
+
 ### Infrastructure
 - SQLite database.
 - SQLAlchemy ORM.
@@ -87,6 +95,22 @@ Swagger UI available at:
 ```text
 /docs
 ```
+
+---
+
+## Running Tests
+
+Run the full automated test suite with:
+
+```bash
+pytest -q
+```
+
+Current baseline:
+- 9 tests passing.
+- Coverage includes authentication, products, cart, and orders.
+- Tests run against an isolated SQLite test database using shared fixtures and FastAPI dependency overrides.
+- The test suite runs against the FastAPI app directly and does not require starting the server manually.
 
 ---
 
@@ -227,6 +251,24 @@ Implemented:
 
 ---
 
+✅ Stage 10 — Testing  
+Completed: 2026-07-10
+
+Implemented:
+- Pytest installation and test setup.
+- `httpx` test dependency support.
+- Shared fixtures in `tests/conftest.py`.
+- Dedicated SQLite test database for isolated test runs.
+- FastAPI dependency overrides for database isolation.
+- Refactored auth database access to use dependency injection.
+- Endpoint tests for authentication flows.
+- Endpoint tests for product retrieval.
+- Endpoint tests for cart operations.
+- Endpoint tests for order creation and retrieval.
+- Verified passing test baseline with 9 total tests.
+
+---
+
 ## Current Architecture
 
 ### Application
@@ -256,6 +298,14 @@ alembic/
 └── versions/               # Migration revision files
 
 alembic.ini                 # Alembic configuration
+
+tests/
+├── __init__.py
+├── conftest.py             # Shared pytest fixtures and test DB setup
+├── test_auth.py            # Authentication endpoint tests
+├── test_products.py        # Product endpoint tests
+├── test_cart.py            # Cart endpoint tests
+└── test_orders.py          # Order endpoint tests
 ```
 
 ### Root Files
@@ -266,7 +316,7 @@ ecommerce.db            # SQLite database (dev only)
 README.md               # Project documentation
 ```
 
-The router modularization was introduced after Stage 4, the service layer was added in Stage 8, and Alembic migration support was added in Stage 9 to improve maintainability, separation of concerns, and schema evolution workflow.
+The router modularization was introduced after Stage 4, the service layer was added in Stage 8, Alembic migration support was added in Stage 9, and automated testing support was added in Stage 10 to improve maintainability, separation of concerns, schema evolution workflow, and regression safety.
 
 ---
 
@@ -283,7 +333,7 @@ The router modularization was introduced after Stage 4, the service layer was ad
 | 7 | Multi-user Ecommerce | ✅ |
 | 8 | Architecture Refactor | ✅ |
 | 9 | Alembic | ✅ |
-| 10 | Testing | 🚧 |
+| 10 | Testing | ✅ |
 | 11 | Docker | 🚧 |
 | 12 | Caching | 🚧 |
 | 13 | Background Tasks | 🚧 |
@@ -294,25 +344,26 @@ The router modularization was introduced after Stage 4, the service layer was ad
 
 ## Next Milestone
 
-### Stage 10 — Testing
+### Stage 11 — Docker
 
 Planned focus:
-- Add automated tests for core API flows.
-- Cover products, cart, orders, and authentication.
-- Verify multi-user isolation behavior.
-- Protect refactors with regression coverage.
-- Improve confidence for future stages.
+- Containerize the FastAPI application.
+- Create a reproducible local development environment.
+- Improve portability across machines.
+- Prepare the project for container-based deployment and CI workflows.
 
 Skills expected:
-- Pytest.
-- FastAPI test client usage.
-- Database test setup.
-- Authenticated endpoint testing.
-- Regression testing.
+- Docker.
+- Dockerfile creation.
+- Container networking basics.
+- Environment configuration.
+- FastAPI containerization.
 
 ---
 
 ## Last Updated
+
+2026-07-10 – completed testing baseline with pytest (Stage 10)
 
 2026-07-09 – completed Alembic integration (Stage 9)
 
@@ -348,3 +399,6 @@ Skills expected:
 - Password hashing.
 - Swagger/OpenAPI.
 - Service-layer architecture.
+- Pytest.
+- HTTPX.
+- Automated API testing.

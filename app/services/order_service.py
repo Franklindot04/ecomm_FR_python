@@ -1,6 +1,7 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session, selectinload
 
+from app.cache_utils import invalidate_product_caches
 from app.models import CartItem, Order, OrderItem, OrderStatus as ORMOrderStatus
 from app.schemas import OrderStatus
 
@@ -74,7 +75,7 @@ def validate_transition(current_status: OrderStatus, new_status: OrderStatus):
         )
 
 
-def create_order_from_cart(db: Session, user_id: int):
+async def create_order_from_cart(db: Session, user_id: int):
     cart_items = db.query(CartItem).options(
         selectinload(CartItem.product)
     ).filter(
@@ -85,6 +86,7 @@ def create_order_from_cart(db: Session, user_id: int):
         raise HTTPException(status_code=400, detail="Cart is empty")
 
     total_price = 0
+    affected_product_ids = []
 
     for item in cart_items:
         product = item.product
@@ -99,6 +101,7 @@ def create_order_from_cart(db: Session, user_id: int):
             )
 
         total_price += product.price * item.quantity
+        affected_product_ids.append(product.id)
 
     order = Order(
         user_id=user_id,
@@ -124,6 +127,8 @@ def create_order_from_cart(db: Session, user_id: int):
         db.delete(item)
 
     db.commit()
+
+    await invalidate_product_caches(affected_product_ids)
 
     return get_user_order_or_404(db, order.id, user_id)
 

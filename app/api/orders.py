@@ -26,11 +26,11 @@ router = APIRouter()
         404: {"description": "Product not found"}
     }
 )
-def create_order(
+async def create_order(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    return create_order_from_cart(db, current_user.id)
+    return await create_order_from_cart(db, current_user.id)
 
 
 @router.get("/orders", response_model=List[OrderResponse])

@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import User
+from app.rate_limiter import rate_limit_login
 from app.schemas import UserCreate, UserResponse, Token
 from app.auth_utils import (
     get_password_hash,
@@ -38,9 +39,10 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
 
 
 @router.post("/login", response_model=Token)
-def login(
+async def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db),
+    _: None = Depends(rate_limit_login),
 ):
     db_user = db.query(User).filter(User.username == form_data.username).first()
 

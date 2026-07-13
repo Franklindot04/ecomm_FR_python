@@ -1,27 +1,63 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+import json
+import os
 from typing import List
 
+from dotenv import load_dotenv
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+
+from app.cache_utils import invalidate_product_caches
 from app.database import get_db
 from app.models import Product
-from app.schemas import (
-    ProductCreate,
-    ProductResponse
-)
+from app.redis_client import redis_client
+from app.schemas import ProductCreate, ProductResponse
+
+load_dotenv()
+
+PRODUCT_CACHE_TTL = int(os.getenv("PRODUCT_CACHE_TTL", "60"))
 
 router = APIRouter()
 
 
+def serialize_product(product: Product) -> dict:
+    return {
+        "id": product.id,
+        "name": product.name,
+        "description": product.description,
+        "price": product.price,
+        "stock": product.stock,
+    }
+
+
 @router.get("/products", response_model=List[ProductResponse])
-def get_products(db: Session = Depends(get_db)):
-    return db.query(Product).all()
+async def get_products(db: Session = Depends(get_db)):
+    cache_key = "products:all"
+    cached_products = await redis_client.get(cache_key)
+
+    if cached_products:
+        return json.loads(cached_products)
+
+    products = db.query(Product).all()
+    serialized = [serialize_product(product) for product in products]
+
+    await redis_client.setex(
+        cache_key,
+        PRODUCT_CACHE_TTL,
+        json.dumps(serialized),
+    )
+
+    return serialized
 
 
 @router.get("/products/{product_id}", response_model=ProductResponse)
-def get_product(product_id: int, db: Session = Depends(get_db)):
-    product = db.query(Product).filter(
-        Product.id == product_id
-    ).first()
+async def get_product(product_id: int, db: Session = Depends(get_db)):
+    cache_key = f"products:{product_id}"
+    cached_product = await redis_client.get(cache_key)
+
+    if cached_product:
+        return json.loads(cached_product)
+
+    product = db.query(Product).filter(Product.id == product_id).first()
 
     if not product:
         raise HTTPException(
@@ -29,7 +65,15 @@ def get_product(product_id: int, db: Session = Depends(get_db)):
             detail="Product not found"
         )
 
-    return product
+    serialized = serialize_product(product)
+
+    await redis_client.setex(
+        cache_key,
+        PRODUCT_CACHE_TTL,
+        json.dumps(serialized),
+    )
+
+    return serialized
 
 
 @router.post(
@@ -37,14 +81,16 @@ def get_product(product_id: int, db: Session = Depends(get_db)):
     response_model=ProductResponse,
     status_code=201
 )
-def create_product(
+async def create_product(
     product: ProductCreate,
     db: Session = Depends(get_db)
 ):
-    new_product = Product(**product.dict())
+    new_product = Product(**product.model_dump())
 
     db.add(new_product)
     db.commit()
     db.refresh(new_product)
+
+    await invalidate_product_caches()
 
     return new_product

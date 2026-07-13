@@ -1,6 +1,6 @@
 # Ecommerce Microservice API
 
-A learning-oriented ecommerce microservice built with FastAPI, SQLite, SQLAlchemy, Alembic, and Docker.
+A learning-oriented ecommerce microservice built with FastAPI, SQLite, SQLAlchemy, Alembic, Redis, and Docker.
 
 The project is being developed incrementally through milestone-based stages, gradually evolving from a simple MVP into a more realistic ecommerce backend while keeping the codebase clean, documented, testable, portable, and easy to extend.
 
@@ -14,6 +14,7 @@ The project is being developed incrementally through milestone-based stages, gra
 - Retrieve a single product.
 - Pydantic validation.
 - Seeded demo inventory.
+- Redis-backed caching for product list and product detail retrieval.
 
 ### Shopping Cart API
 - Add products to cart.
@@ -33,6 +34,7 @@ The project is being developed incrementally through milestone-based stages, gra
 - Retrieve all orders.
 - Retrieve individual orders.
 - Nested serialization using eager loading.
+- Cache invalidation after inventory-changing operations.
 
 ### Order Lifecycle API
 - Order status support.
@@ -48,6 +50,7 @@ The project is being developed incrementally through milestone-based stages, gra
 - Password hashing with bcrypt.
 - Protected user route.
 - Swagger OAuth2 password flow.
+- Redis-backed login rate limiting.
 
 ### Multi-user Ecommerce API
 - User-owned cart items.
@@ -65,6 +68,7 @@ The project is being developed incrementally through milestone-based stages, gra
 - Cleaner separation of concerns.
 - Improved maintainability for future scaling.
 - Preserved existing API behavior after refactor.
+- Dedicated Redis client and cache utility helpers.
 
 ### Database Migration Support
 - Alembic integration for schema migrations.
@@ -78,6 +82,7 @@ The project is being developed incrementally through milestone-based stages, gra
 - Shared fixtures with `conftest.py`.
 - Isolated SQLite test database.
 - FastAPI dependency overrides for test isolation.
+- In-memory `FakeRedis` test client for cache and rate-limit isolation.
 - Auth, products, cart, and orders endpoint coverage.
 - CI-ready test baseline.
 
@@ -85,6 +90,7 @@ The project is being developed incrementally through milestone-based stages, gra
 - Dockerized FastAPI application.
 - `Dockerfile` for container image builds.
 - `docker-compose.yml` for local container orchestration.
+- Redis service included in Docker Compose.
 - `.dockerignore` for cleaner build context.
 - Environment-variable-based configuration.
 - Container healthcheck using `/health`.
@@ -93,6 +99,8 @@ The project is being developed incrementally through milestone-based stages, gra
 - SQLite database.
 - SQLAlchemy ORM.
 - Alembic migrations.
+- Redis caching.
+- Redis-backed rate limiting.
 - Pydantic schemas.
 - Dependency injection.
 - Seed initialization.
@@ -122,6 +130,7 @@ Current baseline:
 - 9 tests passing.
 - Coverage includes authentication, products, cart, and orders.
 - Tests run against an isolated SQLite test database using shared fixtures and FastAPI dependency overrides.
+- Redis-dependent features are tested with an in-memory `FakeRedis` client.
 - The test suite runs against the FastAPI app directly and does not require starting the server manually.
 
 ---
@@ -146,6 +155,7 @@ Useful endpoints:
 
 Current Docker baseline:
 - Containerized FastAPI app.
+- Redis included as a Compose service.
 - Environment variables loaded from `.env`.
 - Healthcheck enabled for container validation.
 
@@ -322,6 +332,22 @@ Implemented:
 
 ---
 
+✅ Stage 12 — Redis Caching & Rate Limiting  
+Completed: 2026-07-13
+
+Implemented:
+- Added Redis integration for application caching.
+- Added Redis-backed caching for product list and product detail endpoints.
+- Added cache invalidation after inventory-changing operations.
+- Added Redis-backed login rate limiting.
+- Added Redis service to `docker-compose.yml`.
+- Added `app/redis_client.py` for centralized Redis client configuration.
+- Added cache utility support for invalidation workflows.
+- Updated tests to use an in-memory `FakeRedis` client.
+- Verified passing test baseline with Redis-aware test isolation.
+
+---
+
 ## Current Architecture
 
 ### Application
@@ -331,7 +357,7 @@ app/
 ├── api/                    # API route handlers
 │   ├── __init__.py
 │   ├── auth.py             # Authentication endpoints
-│   ├── products.py         # Product endpoints
+│   ├── products.py         # Product endpoints with caching
 │   ├── cart.py             # User-scoped cart endpoints
 │   └── orders.py           # User-scoped order endpoints
 ├── services/               # Business logic layer
@@ -339,9 +365,12 @@ app/
 │   ├── cart_service.py     # Cart business logic
 │   └── order_service.py    # Order business logic
 ├── auth_utils.py           # Password hashing, JWT, auth dependency
+├── cache_utils.py          # Cache invalidation helpers
 ├── database.py             # Database connection/session setup
 ├── main.py                 # FastAPI application entry point
 ├── models.py               # SQLAlchemy models
+├── redis_client.py         # Redis client setup
+├── rate_limiter.py         # Login rate limiting dependency
 ├── schemas.py              # Pydantic schemas
 └── seed.py                 # Seed initial product data
 
@@ -352,7 +381,7 @@ alembic/
 
 tests/
 ├── __init__.py
-├── conftest.py             # Shared pytest fixtures and test DB setup
+├── conftest.py             # Shared pytest fixtures, test DB setup, FakeRedis
 ├── test_auth.py            # Authentication endpoint tests
 ├── test_products.py        # Product endpoint tests
 ├── test_cart.py            # Cart endpoint tests
@@ -372,7 +401,7 @@ ecommerce.db            # SQLite database (dev only)
 README.md               # Project documentation
 ```
 
-The router modularization was introduced after Stage 4, the service layer was added in Stage 8, Alembic migration support was added in Stage 9, automated testing support was added in Stage 10, and Docker support was added in Stage 11 to improve maintainability, separation of concerns, schema evolution workflow, regression safety, portability, and containerized development.
+The router modularization was introduced after Stage 4, the service layer was added in Stage 8, Alembic migration support was added in Stage 9, automated testing support was added in Stage 10, Docker support was added in Stage 11, and Redis-backed caching and rate limiting were added in Stage 12 to improve maintainability, separation of concerns, schema evolution workflow, regression safety, portability, performance, and basic abuse protection.
 
 ---
 
@@ -391,7 +420,7 @@ The router modularization was introduced after Stage 4, the service layer was ad
 | 9 | Alembic | ✅ |
 | 10 | Testing | ✅ |
 | 11 | Docker | ✅ |
-| 12 | Caching | 🚧 |
+| 12 | Caching | ✅ |
 | 13 | Background Tasks | 🚧 |
 | 14 | Mock Payments | 🚧 |
 | 15 | Production Readiness | 🚧 |
@@ -400,23 +429,25 @@ The router modularization was introduced after Stage 4, the service layer was ad
 
 ## Next Milestone
 
-### Stage 12 — Caching
+### Stage 13 — Background Tasks
 
 Planned focus:
-- Introduce caching for frequently accessed data.
-- Improve performance for read-heavy endpoints.
-- Reduce repeated database queries.
-- Prepare the API for more realistic production-style optimization.
+- Introduce background processing for non-blocking tasks.
+- Decouple post-request work from synchronous API responses.
+- Prepare the project for email, notifications, and async-style workflows.
+- Continue improving realism of the ecommerce backend.
 
 Skills expected:
-- Caching concepts.
-- FastAPI integration patterns.
-- Cache invalidation basics.
-- Performance-oriented backend design.
+- FastAPI background task patterns.
+- Separation of synchronous and deferred work.
+- Side-effect handling.
+- Backend workflow design.
 
 ---
 
 ## Last Updated
+
+2026-07-13 – completed Redis caching and login rate limiting (Stage 12)
 
 2026-07-11 – completed Docker containerization (Stage 11)
 
@@ -449,6 +480,7 @@ Skills expected:
 - SQLite.
 - SQLAlchemy.
 - Alembic.
+- Redis.
 - Pydantic.
 - Dependency injection.
 - JWT.
@@ -463,3 +495,5 @@ Skills expected:
 - Docker Compose.
 - Environment variables.
 - Container healthchecks.
+- Caching.
+- Rate limiting.

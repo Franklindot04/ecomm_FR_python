@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, BackgroundTasks, Depends
 from sqlalchemy.orm import Session
 from typing import List
 
@@ -6,6 +6,8 @@ from app.auth_utils import get_current_user
 from app.database import get_db
 from app.models import User
 from app.schemas import OrderResponse, OrderStatusUpdate
+from app.services.invoice_service import generate_invoice_file
+from app.services.notification_service import write_order_notification
 from app.services.order_service import (
     cancel_user_order,
     create_order_from_cart,
@@ -27,10 +29,40 @@ router = APIRouter()
     }
 )
 async def create_order(
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    return await create_order_from_cart(db, current_user.id)
+    order = await create_order_from_cart(db, current_user.id)
+
+    background_tasks.add_task(
+        generate_invoice_file,
+        order.id,
+        current_user.id,
+        current_user.email,
+        order.total_price,
+        order.status.value,
+        [
+            {
+                "product_id": item.product_id,
+                "product_name": item.product.name if item.product else "Unknown product",
+                "quantity": item.quantity,
+                "price_at_purchase": item.price_at_purchase,
+            }
+            for item in order.items
+        ],
+    )
+
+    background_tasks.add_task(
+        write_order_notification,
+        order.id,
+        current_user.id,
+        current_user.email,
+        "ORDER_CREATED",
+        f"Order #{order.id} was created successfully with status {order.status.value}."
+    )
+
+    return order
 
 
 @router.get("/orders", response_model=List[OrderResponse])
@@ -67,10 +99,22 @@ def get_order(
 def update_order_status(
     order_id: int,
     payload: OrderStatusUpdate,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    return update_user_order_status(db, order_id, current_user.id, payload.status)
+    order = update_user_order_status(db, order_id, current_user.id, payload.status)
+
+    background_tasks.add_task(
+        write_order_notification,
+        order.id,
+        current_user.id,
+        current_user.email,
+        "ORDER_STATUS_UPDATED",
+        f"Order #{order.id} status changed to {order.status.value}."
+    )
+
+    return order
 
 
 @router.post(
@@ -83,7 +127,19 @@ def update_order_status(
 )
 def cancel_order(
     order_id: int,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    return cancel_user_order(db, order_id, current_user.id)
+    order = cancel_user_order(db, order_id, current_user.id)
+
+    background_tasks.add_task(
+        write_order_notification,
+        order.id,
+        current_user.id,
+        current_user.email,
+        "ORDER_CANCELLED",
+        f"Order #{order.id} was cancelled."
+    )
+
+    return order

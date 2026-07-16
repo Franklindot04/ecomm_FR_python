@@ -43,6 +43,15 @@ The project is being developed incrementally through milestone-based stages, gra
 - State-machine style workflow validation.
 - Swagger-visible status fields.
 
+### Background Tasks
+- Invoice generation after checkout.
+- Order-created notification generation.
+- Order-status-updated notification generation.
+- Order-cancelled notification generation.
+- FastAPI `BackgroundTasks` integration for deferred side effects.
+- Local file-based background task outputs for invoices and notifications.
+- Timezone-aware UTC timestamps for generated artifacts.
+
 ### Authentication API
 - User registration.
 - User login.
@@ -84,6 +93,7 @@ The project is being developed incrementally through milestone-based stages, gra
 - FastAPI dependency overrides for test isolation.
 - In-memory `FakeRedis` test client for cache and rate-limit isolation.
 - Auth, products, cart, and orders endpoint coverage.
+- Background task side-effect coverage for invoices and notifications.
 - CI-ready test baseline.
 
 ### Docker Support
@@ -109,6 +119,7 @@ The project is being developed incrementally through milestone-based stages, gra
 - Docker Compose.
 - Environment variables.
 - Container healthchecks.
+- Background task file outputs.
 
 Swagger UI available at:
 
@@ -127,10 +138,11 @@ pytest -q
 ```
 
 Current baseline:
-- 9 tests passing.
-- Coverage includes authentication, products, cart, and orders.
+- 11 tests passing.
+- Coverage includes authentication, products, cart, orders, and background-task side effects.
 - Tests run against an isolated SQLite test database using shared fixtures and FastAPI dependency overrides.
 - Redis-dependent features are tested with an in-memory `FakeRedis` client.
+- Background task flows are verified through generated invoice and notification artifacts.
 - The test suite runs against the FastAPI app directly and does not require starting the server manually.
 
 ---
@@ -348,6 +360,26 @@ Implemented:
 
 ---
 
+✅ Stage 13 — Background Tasks  
+Completed: 2026-07-16
+
+Implemented:
+- Added FastAPI `BackgroundTasks` to order workflows.
+- Added invoice generation after successful checkout.
+- Added order-created notification generation.
+- Added order-status-updated notification generation.
+- Added order-cancelled notification generation.
+- Added `app/services/invoice_service.py`.
+- Added `app/services/notification_service.py`.
+- Stored generated outputs in `storage/invoices/` and `storage/notifications/`.
+- Updated order routes to trigger deferred side effects after the response is sent.
+- Added tests covering invoice creation and notification generation.
+- Updated generated timestamps to use timezone-aware UTC datetimes.
+- Added `storage/` to `.gitignore` to exclude generated artifacts from version control.
+- Verified passing test baseline with 11 total tests.
+
+---
+
 ## Current Architecture
 
 ### Application
@@ -359,10 +391,12 @@ app/
 │   ├── auth.py             # Authentication endpoints
 │   ├── products.py         # Product endpoints with caching
 │   ├── cart.py             # User-scoped cart endpoints
-│   └── orders.py           # User-scoped order endpoints
-├── services/               # Business logic layer
+│   └── orders.py           # User-scoped order endpoints with background tasks
+├── services/               # Business logic and supporting workflows
 │   ├── __init__.py
 │   ├── cart_service.py     # Cart business logic
+│   ├── invoice_service.py  # Invoice file generation
+│   ├── notification_service.py # Order notification file generation
 │   └── order_service.py    # Order business logic
 ├── auth_utils.py           # Password hashing, JWT, auth dependency
 ├── cache_utils.py          # Cache invalidation helpers
@@ -385,7 +419,11 @@ tests/
 ├── test_auth.py            # Authentication endpoint tests
 ├── test_products.py        # Product endpoint tests
 ├── test_cart.py            # Cart endpoint tests
-└── test_orders.py          # Order endpoint tests
+└── test_orders.py          # Order endpoint tests and background-task verification
+
+storage/
+├── invoices/               # Generated invoice files
+└── notifications/          # Generated notification files
 ```
 
 ### Root Files
@@ -395,13 +433,14 @@ requirements.txt        # Python dependencies
 Dockerfile              # Docker image definition
 docker-compose.yml      # Local container orchestration
 .dockerignore           # Docker build context exclusions
+.gitignore              # Git exclusions, including generated storage artifacts
 .env                    # Local environment variables (not committed)
 alembic.ini             # Alembic configuration
 ecommerce.db            # SQLite database (dev only)
 README.md               # Project documentation
 ```
 
-The router modularization was introduced after Stage 4, the service layer was added in Stage 8, Alembic migration support was added in Stage 9, automated testing support was added in Stage 10, Docker support was added in Stage 11, and Redis-backed caching and rate limiting were added in Stage 12 to improve maintainability, separation of concerns, schema evolution workflow, regression safety, portability, performance, and basic abuse protection.
+The router modularization was introduced after Stage 4, the service layer was added in Stage 8, Alembic migration support was added in Stage 9, automated testing support was added in Stage 10, Docker support was added in Stage 11, Redis-backed caching and rate limiting were added in Stage 12, and background task support for invoices and notifications was added in Stage 13 to improve maintainability, separation of concerns, schema evolution workflow, regression safety, portability, performance, abuse protection, and realism of post-order workflows.
 
 ---
 
@@ -421,7 +460,7 @@ The router modularization was introduced after Stage 4, the service layer was ad
 | 10 | Testing | ✅ |
 | 11 | Docker | ✅ |
 | 12 | Caching | ✅ |
-| 13 | Background Tasks | 🚧 |
+| 13 | Background Tasks | ✅ |
 | 14 | Mock Payments | 🚧 |
 | 15 | Production Readiness | 🚧 |
 
@@ -429,23 +468,25 @@ The router modularization was introduced after Stage 4, the service layer was ad
 
 ## Next Milestone
 
-### Stage 13 — Background Tasks
+### Stage 14 — Mock Payments
 
 Planned focus:
-- Introduce background processing for non-blocking tasks.
-- Decouple post-request work from synchronous API responses.
-- Prepare the project for email, notifications, and async-style workflows.
+- Introduce a mock payment flow before or during checkout.
+- Simulate payment success and failure outcomes.
+- Connect payment results to order status transitions.
 - Continue improving realism of the ecommerce backend.
 
 Skills expected:
-- FastAPI background task patterns.
-- Separation of synchronous and deferred work.
-- Side-effect handling.
-- Backend workflow design.
+- Payment workflow modeling.
+- Service-layer orchestration.
+- Validation of state-dependent actions.
+- Test-driven backend feature expansion.
 
 ---
 
 ## Last Updated
+
+2026-07-16 – completed background tasks for invoices and order notifications (Stage 13)
 
 2026-07-13 – completed Redis caching and login rate limiting (Stage 12)
 
@@ -497,3 +538,5 @@ Skills expected:
 - Container healthchecks.
 - Caching.
 - Rate limiting.
+- Background tasks.
+- File-based side-effect generation.

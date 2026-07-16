@@ -5,7 +5,7 @@ from sqlalchemy import engine_from_config, pool
 from alembic import context
 
 from app.database import Base
-from app.models import Product, CartItem, Order, OrderItem, User
+from app.models import Product, CartItem, Order, OrderItem, User, Payment
 
 config = context.config
 

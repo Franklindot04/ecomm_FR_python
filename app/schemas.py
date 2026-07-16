@@ -1,13 +1,14 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from typing import Optional, List
 from datetime import datetime
 
-from app.models import OrderStatus
+from app.models import OrderStatus, PaymentStatus
 
 
 # -------------------------
 # PRODUCT
 # -------------------------
+
 
 class ProductBase(BaseModel):
     name: str
@@ -22,14 +23,13 @@ class ProductCreate(ProductBase):
 
 class ProductResponse(ProductBase):
     id: int
-
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # -------------------------
 # CART
 # -------------------------
+
 
 class CartItemCreate(BaseModel):
     product_id: int
@@ -40,23 +40,20 @@ class CartItemResponse(BaseModel):
     id: int
     quantity: int
     product: ProductResponse
-
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # -------------------------
 # ORDERS
 # -------------------------
 
+
 class OrderItemResponse(BaseModel):
     id: int
     quantity: int
     price_at_purchase: float
     product: ProductResponse
-
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OrderResponse(BaseModel):
@@ -65,13 +62,36 @@ class OrderResponse(BaseModel):
     status: OrderStatus
     created_at: datetime
     items: List[OrderItemResponse]
-
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OrderStatusUpdate(BaseModel):
     status: OrderStatus
+
+
+# -------------------------
+# PAYMENTS
+# -------------------------
+
+
+class PaymentCreate(BaseModel):
+    order_id: int
+
+
+class PaymentResponse(BaseModel):
+    id: int
+    order_id: int
+    amount: float
+    status: PaymentStatus
+    provider: str
+    created_at: datetime
+    model_config = ConfigDict(from_attributes=True)
+
+
+class PaymentWebhookPayload(BaseModel):
+    payment_id: int
+    status: PaymentStatus
+
 
 # -------------------------
 # AUTH
@@ -88,11 +108,9 @@ class UserResponse(BaseModel):
     id: int
     username: str
     email: str
-
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class Token(BaseModel):
     access_token: str
-    token_type: str    
+    token_type: str

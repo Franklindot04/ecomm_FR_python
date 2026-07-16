@@ -16,6 +16,12 @@ class OrderStatus(str, PyEnum):
     CANCELLED = "CANCELLED"
 
 
+class PaymentStatus(str, PyEnum):
+    PENDING = "PENDING"
+    PAID = "PAID"
+    FAILED = "FAILED"
+
+
 class Product(Base):
     __tablename__ = "products"
 
@@ -71,6 +77,25 @@ class OrderItem(Base):
     product = relationship("Product")
 
 
+class Payment(Base):
+    __tablename__ = "payments"
+
+    id = Column(Integer, primary_key=True, index=True)
+    order_id = Column(Integer, ForeignKey("orders.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    amount = Column(Float, nullable=False)
+    status = Column(
+        Enum(PaymentStatus),
+        nullable=False,
+        default=PaymentStatus.PENDING
+    )
+    provider = Column(String, nullable=False, default="mock")
+    created_at = Column(DateTime, server_default=func.now())
+
+    order = relationship("Order")
+    user = relationship("User", back_populates="payments")
+
+
 class User(Base):
     __tablename__ = "users"
 
@@ -81,3 +106,4 @@ class User(Base):
 
     cart_items = relationship("CartItem", back_populates="user", cascade="all, delete-orphan")
     orders = relationship("Order", back_populates="user", cascade="all, delete-orphan")
+    payments = relationship("Payment", back_populates="user", cascade="all, delete-orphan")

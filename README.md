@@ -43,6 +43,17 @@ The project is being developed incrementally through milestone-based stages, gra
 - State-machine style workflow validation.
 - Swagger-visible status fields.
 
+### Payments API
+- Mock payment creation for orders.
+- Payment amount tracking.
+- Payment provider tracking.
+- Payment status tracking.
+- Payment-to-user association.
+- Payment-to-order association.
+- Order-aware mock payment workflow.
+- Database-backed payment persistence.
+- Alembic-managed payments schema evolution.
+
 ### Background Tasks
 - Invoice generation after checkout.
 - Order-created notification generation.
@@ -85,6 +96,7 @@ The project is being developed incrementally through milestone-based stages, gra
 - SQLite-compatible migration configuration.
 - Database revision tracking with `alembic_version`.
 - Version-controlled schema evolution for future changes.
+- Payments table migration added and verified.
 
 ### Testing
 - Pytest-based automated test suite.
@@ -92,7 +104,7 @@ The project is being developed incrementally through milestone-based stages, gra
 - Isolated SQLite test database.
 - FastAPI dependency overrides for test isolation.
 - In-memory `FakeRedis` test client for cache and rate-limit isolation.
-- Auth, products, cart, and orders endpoint coverage.
+- Auth, products, cart, orders, and payments endpoint coverage.
 - Background task side-effect coverage for invoices and notifications.
 - CI-ready test baseline.
 
@@ -138,12 +150,35 @@ pytest -q
 ```
 
 Current baseline:
-- 11 tests passing.
-- Coverage includes authentication, products, cart, orders, and background-task side effects.
+- 14 tests passing.
+- Coverage includes authentication, products, cart, orders, payments, and background-task side effects.
 - Tests run against an isolated SQLite test database using shared fixtures and FastAPI dependency overrides.
 - Redis-dependent features are tested with an in-memory `FakeRedis` client.
 - Background task flows are verified through generated invoice and notification artifacts.
 - The test suite runs against the FastAPI app directly and does not require starting the server manually.
+- Current known warning: `passlib` emits a Python `crypt` deprecation warning on Python 3.12+, but the suite still passes successfully.
+
+---
+
+## Running Migrations
+
+Create or update the local database schema with:
+
+```bash
+alembic upgrade head
+```
+
+Check the currently applied migration with:
+
+```bash
+alembic current
+```
+
+Current migration baseline:
+- Initial schema migration: `6f5e3d5e8133`
+- Payments migration: `14051421d3f0`
+- Verified local database head: `14051421d3f0 (head)`
+- Verified `payments` table present in SQLite after upgrade
 
 ---
 
@@ -380,6 +415,24 @@ Implemented:
 
 ---
 
+✅ Stage 14 — Mock Payments  
+Completed: 2026-07-16
+
+Implemented:
+- Added mock payment support to the ecommerce backend.
+- Added `payments` table with Alembic-managed schema migration.
+- Added payment fields for order association, user association, amount, provider, status, and creation timestamp.
+- Added payment status enum with `PENDING`, `PAID`, and `FAILED`.
+- Linked payments to existing users and orders through foreign keys.
+- Verified corrected Alembic migration chain from initial migration to payments migration.
+- Verified successful `alembic upgrade head` execution on SQLite.
+- Verified local database head at `14051421d3f0`.
+- Verified `payments` table exists in the migrated SQLite database.
+- Added or updated automated tests for payment-related functionality.
+- Verified passing test baseline with 14 total tests.
+
+---
+
 ## Current Architecture
 
 ### Application
@@ -391,27 +444,31 @@ app/
 │   ├── auth.py             # Authentication endpoints
 │   ├── products.py         # Product endpoints with caching
 │   ├── cart.py             # User-scoped cart endpoints
-│   └── orders.py           # User-scoped order endpoints with background tasks
+│   ├── orders.py           # User-scoped order endpoints with background tasks
+│   └── payments.py         # Mock payment endpoints
 ├── services/               # Business logic and supporting workflows
 │   ├── __init__.py
 │   ├── cart_service.py     # Cart business logic
 │   ├── invoice_service.py  # Invoice file generation
 │   ├── notification_service.py # Order notification file generation
-│   └── order_service.py    # Order business logic
+│   ├── order_service.py    # Order business logic
+│   └── payment_service.py  # Mock payment workflow logic
 ├── auth_utils.py           # Password hashing, JWT, auth dependency
 ├── cache_utils.py          # Cache invalidation helpers
 ├── database.py             # Database connection/session setup
 ├── main.py                 # FastAPI application entry point
-├── models.py               # SQLAlchemy models
+├── models.py               # SQLAlchemy models, including Payment
 ├── redis_client.py         # Redis client setup
 ├── rate_limiter.py         # Login rate limiting dependency
 ├── schemas.py              # Pydantic schemas
 └── seed.py                 # Seed initial product data
 
 alembic/
-├── env.py                  # Alembic environment configuration
-├── script.py.mako          # Migration template
-└── versions/               # Migration revision files
+├── env.py                                  # Alembic environment configuration
+├── script.py.mako                          # Migration template
+└── versions/                               # Migration revision files
+    ├── 6f5e3d5e8133_initial_migration.py
+    └── 14051421d3f0_add_payments_table.py
 
 tests/
 ├── __init__.py
@@ -419,7 +476,8 @@ tests/
 ├── test_auth.py            # Authentication endpoint tests
 ├── test_products.py        # Product endpoint tests
 ├── test_cart.py            # Cart endpoint tests
-└── test_orders.py          # Order endpoint tests and background-task verification
+├── test_orders.py          # Order endpoint tests and background-task verification
+└── test_payments.py        # Payment endpoint and workflow tests
 
 storage/
 ├── invoices/               # Generated invoice files
@@ -440,7 +498,7 @@ ecommerce.db            # SQLite database (dev only)
 README.md               # Project documentation
 ```
 
-The router modularization was introduced after Stage 4, the service layer was added in Stage 8, Alembic migration support was added in Stage 9, automated testing support was added in Stage 10, Docker support was added in Stage 11, Redis-backed caching and rate limiting were added in Stage 12, and background task support for invoices and notifications was added in Stage 13 to improve maintainability, separation of concerns, schema evolution workflow, regression safety, portability, performance, abuse protection, and realism of post-order workflows.
+The router modularization was introduced after Stage 4, the service layer was added in Stage 8, Alembic migration support was added in Stage 9, automated testing support was added in Stage 10, Docker support was added in Stage 11, Redis-backed caching and rate limiting were added in Stage 12, background task support for invoices and notifications was added in Stage 13, and mock payment support was added in Stage 14 to improve maintainability, separation of concerns, schema evolution workflow, regression safety, portability, performance, realism of post-order workflows, and ecommerce payment modeling.
 
 ---
 
@@ -461,30 +519,33 @@ The router modularization was introduced after Stage 4, the service layer was ad
 | 11 | Docker | ✅ |
 | 12 | Caching | ✅ |
 | 13 | Background Tasks | ✅ |
-| 14 | Mock Payments | 🚧 |
+| 14 | Mock Payments | ✅ |
 | 15 | Production Readiness | 🚧 |
 
 ---
 
 ## Next Milestone
 
-### Stage 14 — Mock Payments
+### Stage 15 — Production Readiness
 
 Planned focus:
-- Introduce a mock payment flow before or during checkout.
-- Simulate payment success and failure outcomes.
-- Connect payment results to order status transitions.
-- Continue improving realism of the ecommerce backend.
+- Strengthen configuration and secrets handling.
+- Improve deployment readiness and environment separation.
+- Harden validation, error handling, and observability.
+- Expand test coverage for production-style scenarios.
+- Prepare the service for more realistic operational workflows.
 
 Skills expected:
-- Payment workflow modeling.
-- Service-layer orchestration.
-- Validation of state-dependent actions.
-- Test-driven backend feature expansion.
+- Configuration hardening.
+- Deployment-aware backend design.
+- Reliability and observability improvements.
+- Production-focused testing and cleanup.
 
 ---
 
 ## Last Updated
+
+2026-07-16 – completed mock payments support and verified Alembic payments migration (Stage 14)
 
 2026-07-16 – completed background tasks for invoices and order notifications (Stage 13)
 
@@ -540,3 +601,4 @@ Skills expected:
 - Rate limiting.
 - Background tasks.
 - File-based side-effect generation.
+- Mock payment workflow modeling.

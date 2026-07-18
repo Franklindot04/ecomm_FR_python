@@ -2,7 +2,7 @@
 
 A learning-oriented ecommerce microservice built with FastAPI, SQLite, SQLAlchemy, Alembic, Redis, and Docker.
 
-The project is being developed incrementally through milestone-based stages, gradually evolving from a simple MVP into a more realistic ecommerce backend while keeping the codebase clean, documented, testable, portable, and easy to extend.
+The project was developed incrementally through milestone-based stages, evolving from a simple MVP into a more realistic ecommerce backend while keeping the codebase clean, documented, testable, portable, and easy to extend.
 
 ---
 
@@ -81,14 +81,15 @@ The project is being developed incrementally through milestone-based stages, gra
 - Ownership protection for order retrieval and updates.
 - Protected cart and order endpoints.
 
-### Architecture Improvements
-- Service-layer extraction for cart logic.
-- Service-layer extraction for order logic.
-- Thinner route handlers.
-- Cleaner separation of concerns.
-- Improved maintainability for future scaling.
-- Preserved existing API behavior after refactor.
-- Dedicated Redis client and cache utility helpers.
+### Production Readiness Improvements
+- Centralized runtime configuration via `app/config.py`.
+- Environment-variable-driven settings using `pydantic-settings`.
+- Safe committed `.env.example` for local setup and deployment reference.
+- FastAPI lifespan-based startup initialization for seeded demo inventory.
+- Standardized HTTP and validation error responses.
+- Cleaner configuration flow across auth, database, and Redis integrations.
+- Improved Docker Compose startup readiness with Redis healthcheck dependency.
+- Removal of duplicated settings loading across modules.
 
 ### Database Migration Support
 - Alembic integration for schema migrations.
@@ -113,6 +114,7 @@ The project is being developed incrementally through milestone-based stages, gra
 - `Dockerfile` for container image builds.
 - `docker-compose.yml` for local container orchestration.
 - Redis service included in Docker Compose.
+- Redis healthcheck and health-gated API dependency in Compose.
 - `.dockerignore` for cleaner build context.
 - Environment-variable-based configuration.
 - Container healthcheck using `/health`.
@@ -124,6 +126,7 @@ The project is being developed incrementally through milestone-based stages, gra
 - Redis caching.
 - Redis-backed rate limiting.
 - Pydantic schemas.
+- `pydantic-settings` configuration management.
 - Dependency injection.
 - Seed initialization.
 - Swagger/OpenAPI documentation.
@@ -138,6 +141,33 @@ Swagger UI available at:
 ```text
 /docs
 ```
+
+---
+
+## Configuration
+
+Copy the example environment file and adjust values as needed:
+
+```bash
+cp .env.example .env
+```
+
+Current configurable settings include:
+- `DATABASE_URL`
+- `SECRET_KEY`
+- `ALGORITHM`
+- `ACCESS_TOKEN_EXPIRE_MINUTES`
+- `APP_HOST`
+- `APP_PORT`
+- `REDIS_URL`
+- `PRODUCT_CACHE_TTL`
+- `RATE_LIMIT_TIMES`
+- `RATE_LIMIT_SECONDS`
+
+Notes:
+- `.env.example` is committed as a safe template.
+- `.env` remains local and should not be committed.
+- Application settings are centralized in `app/config.py`.
 
 ---
 
@@ -179,6 +209,7 @@ Current migration baseline:
 - Payments migration: `14051421d3f0`
 - Verified local database head: `14051421d3f0 (head)`
 - Verified `payments` table present in SQLite after upgrade
+- Stage 15 introduced no new schema changes
 
 ---
 
@@ -204,7 +235,9 @@ Current Docker baseline:
 - Containerized FastAPI app.
 - Redis included as a Compose service.
 - Environment variables loaded from `.env`.
-- Healthcheck enabled for container validation.
+- Redis service healthcheck enabled in Compose.
+- API service waits on healthy Redis before startup.
+- Container healthcheck enabled for API validation.
 
 ---
 
@@ -433,6 +466,25 @@ Implemented:
 
 ---
 
+✅ Stage 15 — Production Readiness  
+Completed: 2026-07-18
+
+Implemented:
+- Centralized runtime configuration in `app/config.py`.
+- Added `pydantic-settings` for environment-driven application settings.
+- Added committed `.env.example` for safe local and deployment setup.
+- Removed duplicated per-module settings loading.
+- Moved seeded demo product initialization into FastAPI lifespan startup.
+- Added standardized HTTP exception responses.
+- Added standardized validation error responses.
+- Improved Docker Compose startup reliability with Redis healthcheck dependency.
+- Removed the stray invalid dependency entry from `requirements.txt`.
+- Verified passing test baseline with 14 total tests.
+- Verified Alembic remained at `14051421d3f0 (head)`.
+- Verified no new schema changes were introduced.
+
+---
+
 ## Current Architecture
 
 ### Application
@@ -455,8 +507,9 @@ app/
 │   └── payment_service.py  # Mock payment workflow logic
 ├── auth_utils.py           # Password hashing, JWT, auth dependency
 ├── cache_utils.py          # Cache invalidation helpers
+├── config.py               # Centralized application settings
 ├── database.py             # Database connection/session setup
-├── main.py                 # FastAPI application entry point
+├── main.py                 # FastAPI application entry point and lifespan/error handlers
 ├── models.py               # SQLAlchemy models, including Payment
 ├── redis_client.py         # Redis client setup
 ├── rate_limiter.py         # Login rate limiting dependency
@@ -477,9 +530,9 @@ tests/
 ├── test_products.py        # Product endpoint tests
 ├── test_cart.py            # Cart endpoint tests
 ├── test_orders.py          # Order endpoint tests and background-task verification
-└── test_payments.py        # Payment endpoint and workflow tests
+├── test_payments.py        # Payment endpoint and workflow tests
 
-storage/
+storage/                    # Runtime-generated artifacts, ignored by Git
 ├── invoices/               # Generated invoice files
 └── notifications/          # Generated notification files
 ```
@@ -493,12 +546,16 @@ docker-compose.yml      # Local container orchestration
 .dockerignore           # Docker build context exclusions
 .gitignore              # Git exclusions, including generated storage artifacts
 .env                    # Local environment variables (not committed)
+.env.example            # Safe example environment configuration
 alembic.ini             # Alembic configuration
 ecommerce.db            # SQLite database (dev only)
 README.md               # Project documentation
+CODE_OF_CONDUCT.md      # Community standards
+CONTRIBUTING.md         # Contribution guide
+LICENSE                 # Project license
 ```
 
-The router modularization was introduced after Stage 4, the service layer was added in Stage 8, Alembic migration support was added in Stage 9, automated testing support was added in Stage 10, Docker support was added in Stage 11, Redis-backed caching and rate limiting were added in Stage 12, background task support for invoices and notifications was added in Stage 13, and mock payment support was added in Stage 14 to improve maintainability, separation of concerns, schema evolution workflow, regression safety, portability, performance, realism of post-order workflows, and ecommerce payment modeling.
+The router modularization was introduced after Stage 4, the service layer was added in Stage 8, Alembic migration support was added in Stage 9, automated testing support was added in Stage 10, Docker support was added in Stage 11, Redis-backed caching and rate limiting were added in Stage 12, background task support for invoices and notifications was added in Stage 13, mock payment support was added in Stage 14, and production-readiness hardening was completed in Stage 15 to improve configuration hygiene, startup behavior, deployment clarity, error consistency, regression safety, and maintainability.
 
 ---
 
@@ -520,30 +577,23 @@ The router modularization was introduced after Stage 4, the service layer was ad
 | 12 | Caching | ✅ |
 | 13 | Background Tasks | ✅ |
 | 14 | Mock Payments | ✅ |
-| 15 | Production Readiness | 🚧 |
+| 15 | Production Readiness | ✅ |
 
 ---
 
-## Next Milestone
+## Next Work
 
-### Stage 15 — Production Readiness
-
-Planned focus:
-- Strengthen configuration and secrets handling.
-- Improve deployment readiness and environment separation.
-- Harden validation, error handling, and observability.
-- Expand test coverage for production-style scenarios.
-- Prepare the service for more realistic operational workflows.
-
-Skills expected:
-- Configuration hardening.
-- Deployment-aware backend design.
-- Reliability and observability improvements.
-- Production-focused testing and cleanup.
+With implementation stages complete, the remaining repository work is documentation and community polish:
+- Refine `README.md` presentation as needed.
+- Finalize `CODE_OF_CONDUCT.md`.
+- Finalize `CONTRIBUTING.md`.
+- Optionally add `.env` usage notes, release notes, or deployment examples.
 
 ---
 
 ## Last Updated
+
+2026-07-18 – completed production readiness hardening (Stage 15)
 
 2026-07-16 – completed mock payments support and verified Alembic payments migration (Stage 14)
 
@@ -584,6 +634,7 @@ Skills expected:
 - Alembic.
 - Redis.
 - Pydantic.
+- Pydantic-Settings.
 - Dependency injection.
 - JWT.
 - OAuth2 password flow.
@@ -602,3 +653,4 @@ Skills expected:
 - Background tasks.
 - File-based side-effect generation.
 - Mock payment workflow modeling.
+- Production-readiness configuration hardening.

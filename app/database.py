@@ -1,18 +1,13 @@
-import os
-
-from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-load_dotenv()
-
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./ecommerce.db")
+from app.config import settings
 
 engine_kwargs = {}
-if DATABASE_URL.startswith("sqlite"):
+if settings.database_url.startswith("sqlite"):
     engine_kwargs["connect_args"] = {"check_same_thread": False}
 
-engine = create_engine(DATABASE_URL, **engine_kwargs)
+engine = create_engine(settings.database_url, **engine_kwargs)
 
 SessionLocal = sessionmaker(
     autocommit=False,

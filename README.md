@@ -583,11 +583,10 @@ The router modularization was introduced after Stage 4, the service layer was ad
 
 ## Next Work
 
-With implementation stages complete, the remaining repository work is documentation and community polish:
-- Refine `README.md` presentation as needed.
-- Finalize `CODE_OF_CONDUCT.md`.
-- Finalize `CONTRIBUTING.md`.
-- Optionally add `.env` usage notes, release notes, or deployment examples.
+With implementation stages complete and the core documentation finalized, future repository work may include:
+- Release notes and changelog improvements.
+- Deployment examples and operational documentation.
+- Further documentation improvements as the project evolves.
 
 ---
 
